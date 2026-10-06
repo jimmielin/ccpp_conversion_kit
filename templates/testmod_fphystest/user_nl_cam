@@ -1,0 +1,17 @@
+! Snapshot test for <scheme>. Until the PR, point at the CAM case run directory.
+ncdata = '/glade/campaign/cesm/community/amwg/sima_baselines/cam_sima_test_snapshots/cam<tag>_ne3pg3_<compset>_<scheme>_snapshot_derecho_gnu_before_cYYYYMMDD.nc'
+ncdata_check = '/glade/campaign/cesm/community/amwg/sima_baselines/cam_sima_test_snapshots/cam<tag>_ne3pg3_<compset>_<scheme>_snapshot_derecho_gnu_after_cYYYYMMDD.nc'
+pver = 70
+
+! tolerances for testing
+ncdata_check_err = .true.
+min_difference = 2e-15
+
+! scheme switches, matching the CAM snapshot run's atm_in
+! do_<scheme> = .true.
+
+! diagnostics written by <scheme>_diagnostics, instantaneous, double precision
+hist_output_frequency;h1: 1*nsteps
+hist_max_frames;h1: 1
+hist_add_inst_fields;h1: UIONTEND,VIONTEND
+hist_precision;h1: REAL64

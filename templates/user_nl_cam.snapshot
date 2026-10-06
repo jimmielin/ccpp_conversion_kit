@@ -1,0 +1,11 @@
+! Snapshot capture around one scheme. Tapes 6 and 7 (files *.h5i.* and *.h6i.*).
+! Pick other tape numbers if atm_in already carries fincl6 or fincl7 from a use case.
+cam_snapshot_before_num  = 6
+cam_snapshot_after_num   = 7
+cam_take_snapshot_before = '<named point or user_set>'
+cam_take_snapshot_after  = '<named point or user_set>'
+nhtfrq = 0,0,0,0,0,1,1
+ndens  = 2,2,2,2,2,1,1
+! Switches that turn the scheme on in this compset, with the values the baseline used:
+! apply_lunar_tides = .true.
+! ncdata = '<interpolated IC if the grid has none>'
