@@ -149,14 +149,24 @@ points at 1.7e-18; `dudt` bitwise. Classification: harness. The null dycore conv
 snapshot's degrees latitude to radians, CAM hands the scheme native radians. The port is
 bit-for-bit on identical inputs. Resolution in the dry run: exclude the northward
 accumulator with a comment and rerun with `ncdata_check_err = .true.`: six steps clean,
-exclusion printed every step. Decision for the user: keep the exclusion, or add a radians
-coordinate to CAM snapshots and teach the null dycore to prefer it (host change in both
-models, removes this seed for every latitude-dependent scheme).
+exclusion printed every step. Decision (Haipeng, same day): host fix. CAM 6fc7772fa writes
+`lat_rad`/`lon_rad` on the snapshot tapes (`cam_snapshot_common.F90`, registered from
+`cam_snapshot_init`), CAM-SIMA 89beb07f makes the null dycore prefer them on unstructured
+grids (`read_radians_coord` in `src/dynamics/none/dyn_grid.F90`). Each is a distinct commit
+so it can be split out of the iondrag PRs and ride a misc tag. The split case was rerun to
+produce tapes with the fields (`lat_rad`, `lon_rad`, radians, both tapes; cprnc against the
+unsplit baseline still IDENTICAL on every common field) and the CAM-SIMA test switched to
+those tapes without the exclusion (CAM-SIMA bcfc581c): hard check clean on all six steps,
+the log prints `read_radians_coord: using lat_rad ...`. Second dropsonde run
+(`dropsonde_report_2.txt`): no differences in any subroutine, 30 argument captures
+byte-for-byte identical. Dry-run acceptance met.
 
 Phase 6 (partly): CAM-SIMA testmod `outfrq_iondrag_ghg_derecho` and the `testlist_cam.xml`
-entry are committed on `hplin/iondrag_demo` with the snapshot paths still in the CAM run
-directory. Still to do before the PRs: style pass on the moved lines (`.gt.`, `endif`),
-snapshots to `sima_baselines` with the `cam<tag>_ne3pg3_fwsc_iondrag_ghg_snapshot_derecho_gnu_*`
-names, `aux_cam` (rung 3) for the CAM PR, the three PRs in order.
+entry are committed on `hplin/iondrag_demo` with the snapshot paths still in the split
+case's run directory. Still to do before the PRs: style pass on the moved lines (`.gt.`,
+`endif`), snapshots to `sima_baselines` with the
+`cam<tag>_ne3pg3_fwsc_iondrag_ghg_snapshot_derecho_gnu_*` names (from a CAM build that
+includes the `lat_rad` commit), `aux_cam` (rung 3) for the CAM PR, the three PRs in order,
+with the two host commits (CAM 6fc7772fa, CAM-SIMA 89beb07f) split off to ride misc tags.
 
 `dry-run-log.md` lists what the guides got wrong; all entries are folded.

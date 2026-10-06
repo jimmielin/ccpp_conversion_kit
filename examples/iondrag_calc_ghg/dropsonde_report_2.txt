@@ -1,0 +1,63 @@
+
+================================================================
+dropsonde report  (/glade/derecho/scratch/hplin/261006_conversion_demo/notes/dropsonde_iondrag_ghg_2)
+================================================================
+dropsonde version: 9c6c23f
+SDF:       /glade/derecho/scratch/hplin/261006_conversion_demo/CAM-SIMA/src/physics/ncar_ccpp/test/test_suites/suite_iondrag_ghg.xml
+CAM case:  /glade/derecho/scratch/hplin/cam_fwsc_iondrag_split
+SIMA case: /glade/derecho/scratch/hplin/sima_iondrag_ghg
+steps:     1 (sima step t <-> cam step t+1)
+schemes: 1 compared
+  SIMA-only (no CAM symbol, not compared): iondrag_ghg_diagnostics, apply_tendency_of_eastward_wind, apply_tendency_of_northward_wind
+
+constituent mapping (CAM 41 species, SIMA 1):
+  cam q(:,:, 1) Q                <-> sima q(:,:, 1) water_vapor_mixing_ratio_wrt_moist_air_and_condensed_water
+  cam q(:,:, 2) CLDLIQ           <-> (unmatched, not compared)
+  cam q(:,:, 3) CLDICE           <-> (unmatched, not compared)
+  cam q(:,:, 4) NUMLIQ           <-> (unmatched, not compared)
+  cam q(:,:, 5) NUMICE           <-> (unmatched, not compared)
+  cam q(:,:, 6) RAINQM           <-> (unmatched, not compared)
+  cam q(:,:, 7) SNOWQM           <-> (unmatched, not compared)
+  cam q(:,:, 8) NUMRAI           <-> (unmatched, not compared)
+  cam q(:,:, 9) NUMSNO           <-> (unmatched, not compared)
+  cam q(:,:,10) bc_a1            <-> (unmatched, not compared)
+  cam q(:,:,11) bc_a4            <-> (unmatched, not compared)
+  cam q(:,:,12) CFC11            <-> (unmatched, not compared)
+  cam q(:,:,13) CFC12            <-> (unmatched, not compared)
+  cam q(:,:,14) CH4              <-> (unmatched, not compared)
+  cam q(:,:,15) DMS              <-> (unmatched, not compared)
+  cam q(:,:,16) dst_a1           <-> (unmatched, not compared)
+  cam q(:,:,17) dst_a2           <-> (unmatched, not compared)
+  cam q(:,:,18) dst_a3           <-> (unmatched, not compared)
+  cam q(:,:,19) H2O2             <-> (unmatched, not compared)
+  cam q(:,:,20) H2SO4            <-> (unmatched, not compared)
+  cam q(:,:,21) N2O              <-> (unmatched, not compared)
+  cam q(:,:,22) ncl_a1           <-> (unmatched, not compared)
+  cam q(:,:,23) ncl_a2           <-> (unmatched, not compared)
+  cam q(:,:,24) ncl_a3           <-> (unmatched, not compared)
+  cam q(:,:,25) num_a1           <-> (unmatched, not compared)
+  cam q(:,:,26) num_a2           <-> (unmatched, not compared)
+  cam q(:,:,27) num_a3           <-> (unmatched, not compared)
+  cam q(:,:,28) num_a4           <-> (unmatched, not compared)
+  cam q(:,:,29) pom_a1           <-> (unmatched, not compared)
+  cam q(:,:,30) pom_a4           <-> (unmatched, not compared)
+  cam q(:,:,31) SO2              <-> (unmatched, not compared)
+  cam q(:,:,32) so4_a1           <-> (unmatched, not compared)
+  cam q(:,:,33) so4_a2           <-> (unmatched, not compared)
+  cam q(:,:,34) so4_a3           <-> (unmatched, not compared)
+  cam q(:,:,35) soa_a1           <-> (unmatched, not compared)
+  cam q(:,:,36) soa_a2           <-> (unmatched, not compared)
+  cam q(:,:,37) SOAE             <-> (unmatched, not compared)
+  cam q(:,:,38) SOAG             <-> (unmatched, not compared)
+  cam q(:,:,39) AOA1             <-> (unmatched, not compared)
+  cam q(:,:,40) HORZ             <-> (unmatched, not compared)
+  cam q(:,:,41) VERT             <-> (unmatched, not compared)
+
+call alignment (hits per compared step; sima step t pairs with cam step t+1;
+indented rows are calls made from inside the parent scheme):
+  iondrag_ghg   sima x1   cam x1
+
+comparison (execution order):
+
+No differences found in any subroutines!
+(1 hit pairs compared, 30 sima arg captures, byte-for-byte identical)

@@ -44,10 +44,12 @@ Anything the scheme needs that no scheme provides must come from the host:
   host-side metadata: a registry variable set in `cam_comp.F90` each step (as `calday` is), or
   a host module `.meta`. Calendar day exists; year, month, day, seconds of day, and Julian day
   do not yet. Propose the standard names, then ask the user which mechanism they want.
-- `latitude` and `longitude` in radians come from the null dycore, which converts the degrees
-  on the snapshot; expect a 1-ulp seed at a few dozen columns in any scheme that uses them
-  (phase 5 pathology catalogue). Reference pressures (`ref_pres`) are computed from the
-  snapshot's hybrid coefficients and matched CAM bitwise in the iondrag dry run.
+- `latitude` and `longitude` in radians come from the null dycore. With snapshots written
+  after October 2026 it reads CAM's `lat_rad`/`lon_rad` fields and the values are bitwise
+  CAM's; with older snapshots it converts the degrees coordinates and a 1-ulp seed appears at
+  a few dozen columns in any scheme that uses them (phase 5 pathology catalogue). Reference
+  pressures (`ref_pres`) are computed from the snapshot's hybrid coefficients and matched CAM
+  bitwise in the iondrag dry run.
 - Registry constituent entries only declare the IC mapping; a scheme must register the
   constituent (metadata `advected = true`, or a register-phase scheme) or capgen silently
   creates an empty one keyed to the local name (log: `X not found, also looked for: [...]`).

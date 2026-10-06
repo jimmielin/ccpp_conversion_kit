@@ -54,7 +54,9 @@ only the other changed.
 3. **Call alignment.** Hit counts per call site; CAM calling a utility many more times than
    SIMA is normal (CAM runs the whole model). Wildly different counts for the scheme itself
    mean chunking is on or a loop differs.
-4. **Comparison.** The `FIRST DIVERGENCE` box is the lead. `[INPUTS DIFFER]` means the models
+4. **Comparison.** A clean run prints `No differences found in any subroutines!` with the
+   number of hit pairs and argument captures; that line is the exit check. Otherwise the
+   `FIRST DIVERGENCE` box is the lead. `[INPUTS DIFFER]` means the models
    handed the scheme different data: the cause is upstream, in wiring, initialization, or an
    earlier scheme. `[OUTPUTS DIFFER]` with matching inputs means the cause is inside the
    scheme or the build. Everything below the first divergence is usually propagation.
@@ -78,7 +80,7 @@ Match the fingerprint before theorizing.
 | Differences look like one-timestep deltas of the fields themselves | off-by-one frame or a stale tape | confirm the capture regenerated and the case mounts the new files |
 | Everything differs from the first compared scheme | wrong snapshot or wrong step pairing; the report's `alignment check` verdict says which | |
 | A small answer difference and the scheme's log shows it disabled itself | GNU on Derecho zeroes the hidden length of deferred-length module character arrays across use association | store fixed-length copies |
-| `[INPUTS DIFFER]` on `latitude` (or `longitude`) only, about 1e-16 at a few dozen columns; outputs differ at 1e-18 in the fields that use it | the null dycore rebuilds radians from the degrees on the snapshot; CAM hands schemes its native radians | harness; exclude the `_due_to_model_physics` accumulator with a comment, or add a radians coordinate to the snapshot and teach the null dycore to prefer it (host change, ask the user) |
+| `[INPUTS DIFFER]` on `latitude` (or `longitude`) only, about 1e-16 at a few dozen columns; outputs differ at 1e-18 in the fields that use it | the snapshot predates the `lat_rad`/`lon_rad` fields (October 2026), so the null dycore rebuilt radians from degrees; CAM hands schemes its native radians | harness; regenerate the snapshot with current CAM, or exclude the `_due_to_model_physics` accumulator with a comment |
 | Integer vs real exponent, partial fill of an `intent(out)` array, a missing clamp that CAM applied in `physics_update` | genuine port differences | `references/framework_gotchas.md`, b4b discipline |
 
 ## The loop
