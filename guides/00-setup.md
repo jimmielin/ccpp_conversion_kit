@@ -120,9 +120,8 @@ found, the case build is the check.
 
 Everywhere: `cprnc` (`/glade/campaign/cesm/cesmdata/cprnc/cprnc` on Derecho; it is not a
 case variable on current CIME), `ncdump`, `ncks`.
-dropsonde is a separate, private repository: `git clone git@github.com:jimmielin/dropsonde.git`
-in the sandbox (the https URL prompts for a username and fails in a batch shell); ask the
-author for access first.
+dropsonde is a separate repository: `git clone https://github.com/hplin-ucar/dropsonde`
+in the sandbox or ask the author if it is already installed somewhere.
 
 ## Exit check
 

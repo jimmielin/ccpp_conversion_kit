@@ -15,7 +15,7 @@ The repository root is the skill. Clone it and symlink it into your Claude Code 
 directory under the name `ccpp-kit`:
 
 ```
-git clone <url> ~/conversion_kit
+git clone https://github.com/jimmielin/ccpp_conversion_kit.git ~/conversion_kit
 mkdir -p ~/.claude/skills ~/.claude/agents
 ln -s ~/conversion_kit ~/.claude/skills/ccpp-kit
 ln -s ~/conversion_kit/agents/cam-sima-reviewer.md ~/.claude/agents/cam-sima-reviewer.md
@@ -23,9 +23,14 @@ ln -s ~/conversion_kit/agents/cam-sima-reviewer.md ~/.claude/agents/cam-sima-rev
 
 The second link installs the review agent that phase 1 uses before the first build.
 
-Start Claude Code anywhere inside your sandbox (the directory that holds `CAM/` and
-`CAM-SIMA/`) and say what you want to convert. The skill triggers on CCPP vocabulary. On first
-use it interviews you and writes `kit.local.md` in the sandbox root; see `guides/00-setup.md`.
+I also recommend installing `dropsonde` (https://github.com/hplin-ucar/dropsonde) in your scratch directory.
+
+## Getting started
+
+1. Install the conversion kit.
+2. Create a sandbox anywhere you would like and check out the latest CAM tag in `CAM/`, and the latest CAM-SIMA in `CAM-SIMA/`.
+3. Start Claude Code. Invoke the `/ccpp-kit` skill, and you will be interviewed to start the process.
+4. Claude will work with you to get everything converted!
 
 ## Layout
 
@@ -59,6 +64,6 @@ tools/
 
 ## Conventions for this repository
 
-- Plain ASCII prose; no em dashes (some ESCOMP tooling chokes on them).
 - Guides are self-contained and end with an exit check.
 - Promote a one-off recipe into a guide only after it has been needed twice.
+- Relay any feedback to Haipeng Lin.
