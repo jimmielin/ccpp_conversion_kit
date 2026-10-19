@@ -72,7 +72,8 @@ choice in the inventory, and flag it in the PR.
   diff in your notes. When the run body moved into a routine with a different name, a second
   call isolates the physics lines: `fbody --diff <base>:<orig>.F90 <old_run> <scheme>.F90
   <scheme>_run --map r8=kind_phys --map <old_local>=<new_arg>`.
-- `fcheck <files>` compiles them against the cached module set.
+- Syntax-only compile of the touched files against a built case's module directory (the
+  `gfortran -fsyntax-only` recipe under Tools in `guides/00-setup.md`); seconds, no build.
 - A review pass before the first build (the `cam-sima-reviewer` agent, or a colleague):
   b4b risks, metadata against the Fortran, suite order. Apply non-numeric fixes as follow-up
   commits; atmospheric_physics and CAM-SIMA squash-merge, so never amend and force-push a
@@ -84,7 +85,9 @@ choice in the inventory, and flag it in the PR.
 
 Build two CAM cases with identical configuration (compset, grid, `DEBUG=TRUE`, same
 compiler, same `user_nl_cam`, at least 6 steps): one from the unsplit base, one from the
-split branch. The snapshot case from phase 2 is the base; clone it rather than recreating it:
+split branch. The base is the snapshot case of `guides/20-snapshots.md`, created with the
+unsplit code at the start of this phase (its run is both the b4b reference and the snapshot
+source); clone it rather than recreating it:
 
 ```
 cd <sandbox>/CAM/cime/scripts

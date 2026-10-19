@@ -23,7 +23,7 @@ CAM for now; the dispatcher keeps calling it.
 | ion-drag tensor tables | `alamxx`, `alamxy` data statements over `plevtiod` TIME-GCM levels, `pshtiod` built from -17 in steps of 0.25 and shifted by `log(preftgcm/1e5)`, `preftgcm = 5e-5 Pa` | module parameters | n/a | n/a |
 | interpolated tensors | `alamxxi(pver)`, `alamxyi(pver)` via `lininterp` onto `pshccm = log(1e5/pref_mid)` with the vertical index inverted and inverted back | module state set at init | n/a | n/a |
 | activation | `nbot_lev` = last level with `log(1e5/pref_mid) > 14`; `ntop_lev = 1`; `doiodrg = nbot_lev > ntop_lev` | module state | n/a | init log prints `IONDRAG flag is` |
-| tendencies | `ptend%u`, `ptend%v` (`lu`, `lv` true) | out | `tendency_of_eastward_wind_due_to_ion_drag_TBD`, `tendency_of_northward_wind_due_to_ion_drag_TBD` | `ptend_u`, `ptend_v` on the after tape |
+| tendencies | `ptend%u`, `ptend%v` (`lu`, `lv` true) | out | `tendency_of_eastward_wind`, `tendency_of_northward_wind` (first drafted as `..._due_to_ion_drag_TBD`; the generic names won at review, see the standard-name table below) | `ptend_u`, `ptend_v` on the after tape |
 | diagnostics | `UIONTEND`, `VIONTEND` (`outfld` inside the scheme); `UTEND_IONDRG`, `VTEND_IONDRG` (`outfld` of ptend in physpkg) | history | `<scheme>_diagnostics` | compare via cprnc |
 
 Dependency to triage: `lininterp` from `src/utils/interpolate_data.F90`. Three options were
@@ -48,8 +48,8 @@ temperature call. The `iondrag_calc_section` bracket covers `iondrag_calc`, the 
 Route C: CAM6 SC-WACCM (`FWsc2000climo`, L70) at `ne3pg3_ne3pg3_mg37`. No ions, so
 `do_waccm_ions` is false and the ghg path runs; the L70 top (pressures down to about
 5e-4 Pa) satisfies the activation gate. No ne3 initial condition exists for L70, so one is
-regridded from the ne30pg3 L70 WACCM IC with `tools/interpic_new`. Commands, in order, in
-`derecho-prep.md`.
+regridded from the ne30pg3 L70 WACCM IC with `ESMF_RegridWeightGen` and `ncremap`
+(`tools/interpic_new` cannot regrid SE to SE). Commands, in order, in `derecho-prep.md`.
 
 Snapshot point: `iondrag_calc_section` (method A). The CAM case is created dechunked with
 one task so the same build serves dropsonde in phase 5.
@@ -59,9 +59,9 @@ one task so the same build serves dropsonde in phase 5.
 ```
 <group name="physics_after_coupler">
   <scheme>iondrag_ghg</scheme>
+  <scheme>iondrag_ghg_diagnostics</scheme>
   <scheme>apply_tendency_of_eastward_wind</scheme>
   <scheme>apply_tendency_of_northward_wind</scheme>
-  <scheme>iondrag_ghg_diagnostics</scheme>
 </group>
 ```
 
@@ -124,7 +124,7 @@ Phase 1 (rung 0 passed locally):
 - `fbody --walk`: eight untouched units IDENTICAL; `iondrag_init` DIFF 8 (new call),
   `ghg_init` to `iondrag_ghg_init` DIFF 31 (arguments, allocate, masterproc guard),
   `iondrag_calc_ghg` DIFF 38 (now the CAM interface). Both 97-value tables diff clean.
-- `fcheck` ok; `suite-trace status` resolves everything; `audit` and `read-before-write`
+- Syntax-only compile ok; `suite-trace status` resolves everything; `audit` and `read-before-write`
   clean; CCPP lint clean.
 - Rung 1 and 2 passed (2026-10-06): `cam_fwsc_iondrag_split` (create_clone of the baseline,
   built from CAM b29b70c28 with atmospheric_physics e4978517) gives identical `nstep, te`

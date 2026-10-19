@@ -23,48 +23,18 @@ export PBS_ACCOUNT=$PROJ
 mkdir -p $WS/ic $WS/notes
 ```
 
-## 1. Build interpic
-
-The Makefile's Linux block uses `ifort` and links `-lnetcdf` only; the Fortran interface also
-needs `-lnetcdff`, so override `LDFLAGS` on the command line.
-
-```
-cd $WS/CAM/tools/interpic_new
-module load intel netcdf
-make FC=ifx LIB_NETCDF=$NETCDF/lib INC_NETCDF=$NETCDF/include \
-     LDFLAGS="-L$NETCDF/lib -lnetcdff -lnetcdf"
-ls -l interpic
-```
-
-If `ifort` is not available on the loaded stack, add `FC=ifx` to the make line.
-
-## 2. Make the ne3np4 L70 initial condition
+## 1. Make the ne3np4 L70 initial condition
 
 Source: the ne30pg3 L70 WACCM IC that `FW2000climo` uses on SE (`waccm_phys` attribute in the
-namelist defaults). Template: the horizontal grid of an existing ne3np4 IC plus the vertical
-coordinate of the source, so interpic regrids horizontally only.
+namelist defaults). No ne3 IC exists for L70, so regrid horizontally with ESMF bilinear
+weights between the SCRIP grids and `ncremap`. (`tools/interpic_new` cannot regrid SE to SE;
+the first attempt used it and failed, dry-run item 1.)
 
 ```
 module load nco
 SRC=$DIN/atm/waccm/ic/FW2000.ne30pg3_ne30pg3_nlev70_c230906.nc
-NE3=$DIN/atm/cam/inic/se/cami_0000-01-01_ne3np4_L26_c120525.nc
 OUT=$WS/ic/FW2000_ne3np4_L70_from_ne30pg3_c$(date +%Y%m%d).nc
 
-ncdump -v lat $NE3 | tail -5                      # expect degrees, within -90..90
-ncks -O -v lat,lon $NE3 $WS/ic/ne3np4_L70_template.nc
-ncks -A -v hyai,hyam,hybi,hybm,lev,ilev,P0 $SRC $WS/ic/ne3np4_L70_template.nc
-cd $WS/CAM/tools/interpic_new
-./interpic -t $WS/ic/ne3np4_L70_template.nc $SRC $OUT
-ncdump -h $OUT | grep -E 'ncol = |lev = |ilev = ' # expect ncol = 488, lev = 70, ilev = 71
-ncdump -h $OUT | grep -c 'double'                 # a few hundred fields
-```
-
-If `P0` is missing on the source, drop it from the `ncks -A` list; CAM reads it from the
-hybrid coefficients when absent.
-
-Note (hplin): interpic cannot do se-to-se so we used ESMF ncremap instead.
-
-```
 cd $WS/ic
 # working copy: rename ncol_d->ncol, drop the ne30 area fields
 ncks -O -x -v area_d,area_weight_gll $SRC FW2000_ne30np4_L70_ncolrenamed.nc
@@ -75,14 +45,25 @@ ncrename -d ncol_d,ncol -v lat_d,lat -v lon_d,lon FW2000_ne30np4_L70_ncolrenamed
   -d $DIN/share/scripgrids/ne3_scrip_230714.nc \
   -w map_ne30np4_to_ne3np4_bilin.nc -m bilinear
 ncremap -m map_ne30np4_to_ne3np4_bilin.nc -i FW2000_ne30np4_L70_ncolrenamed.nc -o $OUT
+ncdump -h $OUT | grep -E 'ncol = |lev = |ilev = ' # expect ncol = 488, lev = 70, ilev = 71
+ncdump -h $OUT | grep -c 'double'                 # a few hundred fields
 ```
+
+The ESMF path above is the one installed with the Derecho 25.10 software stack; `module
+load esmf` and `which ESMF_RegridWeightGen` finds the current one.
+
+## 2. (retired) interpic
+
+Kept only so the numbering of the dry-run log still reads: `tools/interpic_new` builds
+(`make FC=ifx ... LDFLAGS="-L$NETCDF/lib -lnetcdff -lnetcdf"`) but cannot regrid SE to SE.
 
 ## 3. CAM snapshot case (also the dropsonde CAM case)
 
 ```
 cd $WS/CAM/cime/scripts
 ./create_newcase --case $WS/cam_fwsc_iondrag --compset FWsc2000climo \
-    --res ne3pg3_ne3pg3_mg37 --compiler gnu --project $PROJ --run-unsupported
+    --res ne3pg3_ne3pg3_mg37 --compiler gnu --project $PROJ --run-unsupported \
+    --output-root $SCR      # not the stale /glade/scratch a login shell may export (dry-run item 13)
 cd $WS/cam_fwsc_iondrag
 ./xmlchange DEBUG=TRUE,NTASKS=1,NTHRDS=1,STOP_OPTION=nsteps,STOP_N=6,DOUT_S=FALSE
 ./xmlchange ROF_NCPL=$(./xmlquery --value ATM_NCPL),GLC_NCPL=$(./xmlquery --value ATM_NCPL)
@@ -145,8 +126,9 @@ ncdump -h $RUN/*.h5i.* | grep -E 'time = |double (ptend_[usv]\(|state_[uv]\()'
 ncdump -h $RUN/*.h6i.* | grep -c 'double pbuf_'
 ```
 
-Expected: `IONDRAG flag is T` with `NBOT_LEV` well above the surface, five frames on each
-tape, `ptend_u` and `ptend_v` on the after tape, `state_u`/`state_v` on both.
+Expected: `IONDRAG flag is T` with `NBOT_LEV` well above the surface, six frames on each
+tape (`STOP_N=6`; step 0 is skipped), `ptend_u` and `ptend_v` on the after tape,
+`state_u`/`state_v` on both.
 
 Output:
 ```

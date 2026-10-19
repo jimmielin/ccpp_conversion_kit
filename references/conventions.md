@@ -28,7 +28,6 @@ module scheme_name
 
   implicit none
   private
-  save
 
   ! public CCPP-compliant subroutines
   public :: scheme_name_init
@@ -109,8 +108,15 @@ Always add `errmsg, errflg` as the last two arguments. Initialize at routine top
 
 ### Constituent metadata
 If a variable traces back to `state%q` in CAM, add `advected = true` to its metadata.
-Use `ccpp_const_get_idx` with the standard name to look up constituent index at runtime
-(never assume ordering).
+Look the constituent index up by standard name at `_init`, never by position:
+```fortran
+    use ccpp_scheme_utils, only: ccpp_constituent_index
+    call ccpp_constituent_index('water_vapor_mixing_ratio_wrt_moist_air_and_condensed_water', &
+                                ixq, errflg, errmsg)
+    if (errflg /= 0) return
+```
+`ccpp_scheme_utils` is framework-provided: no `dependencies` entry. The error code comes
+before the message. (`ccpp_const_get_idx` from `ccpp_const_utils` is retired.)
 
 ### Dependencies
 List relative paths in `dependencies` field of `[ccpp-table-properties]`:
@@ -152,7 +158,6 @@ List relative paths in `dependencies` field of `[ccpp-table-properties]`:
 ```xml
   <entry id="scheme_data_file">
     <type>char*256</type>
-    <input_pathname>abs</input_pathname>
     <category>scheme_category</category>
     <group>scheme_nl_group</group>
     <standard_name>filename_of_...</standard_name>
@@ -163,7 +168,9 @@ List relative paths in `dependencies` field of `[ccpp-table-properties]`:
     </values>
   </entry>
 ```
-The matching `_init` argument is `type = character | kind = len=*` in the metadata.
+The matching `_init` argument is `type = character | kind = len=*` in the metadata. A plain
+`char*256` entry is the whole pattern (`solar_irradiance_data_namelist.xml`); no
+`input_pathname` element.
 
 ## SDF Structure
 
@@ -175,8 +182,8 @@ The matching `_init` argument is `type = character | kind = len=*` in the metada
        <scheme>wet_to_dry_water_vapor</scheme>
        <!-- core scheme -->
        <scheme>scheme_name</scheme>
-       <!-- diagnostics -->
-       <scheme>scheme_name_diagnostic</scheme>
+       <!-- diagnostics: right after the scheme, before the appliers (suite_cam7 pattern) -->
+       <scheme>scheme_name_diagnostics</scheme>
        <!-- post-processing / tendency application -->
        <scheme>dry_to_wet_water_vapor</scheme>
        <scheme>apply_heating_rate</scheme>
@@ -268,7 +275,6 @@ module <parameterization>_diagnostics
 
    implicit none
    private
-   save
 
    public :: <parameterization>_diagnostics_init
    public :: <parameterization>_diagnostics_run
@@ -322,11 +328,10 @@ CONTAINS
 end module <parameterization>_diagnostics
 ```
 
-Corresponding metadata `[ccpp-table-properties]` must include:
-```
-  dependencies = ../../utils/cam_history.F90,../../utils/cam_history_support.F90
-```
-(adjust relative paths to match actual location in atmospheric_physics tree)
+The metadata `[ccpp-table-properties]` block has no `dependencies` line: `cam_history` and
+`cam_history_support` are host-provided, and `sima_diagnostics` is the one place a scheme may
+`use` them. No module-level `save` (the linter flags it); the repository template is
+`schemes/sima_diagnostics/scheme_diagnostics_template.F90`.
 
 ## Recurring Scheme Patterns
 
@@ -356,20 +361,11 @@ it is free debugging information. Precedents: `mam_mode_metadata`, `chem_vmr_met
 Do NOT list `ccpp_io_reader` in metadata `dependencies` (host-provided).
 Sanity-check table dimensions after the read and error out with a specific message.
 
-### Deferred first-run init (host objects unavailable at _init)
-When an init call needs objects created only after phys_init (notably
-`aerosol_instances`), resolve them inside `_run` and guard the dependent init:
-```fortran
-    logical :: resolved = .false.   ! module-level, saved
-    ...
-    if (.not. resolved) then
-      call dependent_init(aero_props, ..., errmsg=errmsg, errflg=errflg)
-      if (errflg /= 0) return
-      resolved = .true.
-    end if
-```
-See framework_gotchas.md #2 for the timing facts; precedents:
-`modal_aero_wateruptake_ccpp`, `modal_aero_setsox_ccpp`.
+### Deferred first-run init: legacy, do not copy
+Older wrappers (`modal_aero_wateruptake_ccpp`, `modal_aero_setsox_ccpp`) resolve aerosol
+objects inside `_run` behind a first-call guard because they predate the reorder that runs
+`rad_aer_init_all` before `phys_init`. New schemes resolve host objects at `_init`; see
+framework_gotchas.md #2.
 
 ## Available Utility Schemes
 

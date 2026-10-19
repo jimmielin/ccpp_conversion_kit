@@ -32,10 +32,11 @@ before the PR opens, never earlier.
 
 - Destination on Derecho:
   `/glade/campaign/cesm/community/amwg/sima_baselines/cam_sima_test_snapshots/`
-- Names: `cam<tag>_<res>_<parameterization>_snapshot_derecho_<compiler>_before_cYYYYMMDD.nc`
+- Names: `cam<tag>_<res>_<compset>_<parameterization>_snapshot_derecho_<compiler>_before_cYYYYMMDD.nc`
   and the same with `after`, for example
   `cam6_4_201_ne3pg3_fwsc_iondrag_ghg_snapshot_derecho_gnu_before_c20261020.nc`. The CAM tag
-  is the one the snapshot case was built from.
+  is the one the snapshot case was built from (older files in the directory omit it:
+  `cam_ne3pg3_fhist_beljaars_...`; use the tagged form).
 - `chmod 644` both files. Then switch the testmod's `ncdata` and `ncdata_check` from the run
   directory to these paths and rerun the test once.
 - Izumi copies go under `/project/amp02/cam_snapshot_files/<parameterization>/`.
@@ -52,9 +53,10 @@ drift.
 - CAM PR: the `_cam` interface, the `bld/configure` Filepath entry, the snapshot bracket if
   method B was used, the pin bump. State the answer impact explicitly: bit-for-bit, with the
   `aux_cam` evidence (rung 3). Disclose AI assistance as the CAM `AGENTS.md` requires.
-- CAM-SIMA PR: registry or host changes, testmod, testlist entry, pin bump. Regenerate and
-  commit the `write_init_files` reference samples if the registry changed (its `AGENTS.md`
-  describes the workflow).
+- CAM-SIMA PR: registry or host changes, testmod, testlist entry, pin bump. If the registry
+  changed, regenerate and commit the `write_init_files` reference samples under
+  `test/unit/python/sample_files/` that `test/unit/python/test_write_init_files.py` compares
+  against (CAM-SIMA's `AGENTS.md`, pending on `hplin/agents_md`, describes the workflow).
 
 Push to your fork only, never to the ESCOMP remotes. Remove `user_set` brackets and any
 hardcoded capture switches before the CAM PR unless they were promoted to a named point.

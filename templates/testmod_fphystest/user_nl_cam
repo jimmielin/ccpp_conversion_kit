@@ -1,7 +1,9 @@
-! Snapshot test for <scheme>. Until the PR, point at the CAM case run directory.
+! Snapshot test for <scheme>. Final form: the shared baseline paths below (phase 6).
+! While iterating before the PR, point ncdata and ncdata_check at the tapes in the CAM
+! case run directory instead.
 ncdata = '/glade/campaign/cesm/community/amwg/sima_baselines/cam_sima_test_snapshots/cam<tag>_ne3pg3_<compset>_<scheme>_snapshot_derecho_gnu_before_cYYYYMMDD.nc'
 ncdata_check = '/glade/campaign/cesm/community/amwg/sima_baselines/cam_sima_test_snapshots/cam<tag>_ne3pg3_<compset>_<scheme>_snapshot_derecho_gnu_after_cYYYYMMDD.nc'
-pver = 70
+pver = 70     ! must equal the snapshot's lev (70 is the L70 WACCM grid of the iondrag example)
 
 ! tolerances for testing
 ncdata_check_err = .true.

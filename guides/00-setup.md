@@ -86,19 +86,37 @@ Izumi: tcsh login shell, old Python, use `qsub` with an explicit queue; gdb need
 
 ## Tools
 
-On Derecho, `/glade/work/hplin/verify_tools/bin/` holds read-only copies of:
+Shared tools on Derecho: `/glade/campaign/cesm/community/amwg/sima_tools` (read its
+`README.md` first). Each tool has a one-screen README; call it by full path, since a fresh
+shell does not keep `PATH`:
 
-- `suite-trace`: does a suite resolve, who provides a standard name, who consumes it, dead
-  inputs. Half a second, no build. `suite-trace --cam-sima <dir> --atmospheric-physics <dir>
-  --suite <stem> status | who <name> | trace <name> | audit | read-before-write`.
-  Under zsh, export `SUITE_TRACE_CAM_SIMA`, `SUITE_TRACE_ATMOSPHERIC_PHYSICS` and
-  `SUITE_TRACE_SUITE` once instead of holding the whole command in a variable (zsh does not
-  word-split it). A bare git worktree of atmospheric_physics fails with
-  `micro_pumas_diags.meta does not exist` until
-  `verify_tools/bin/worktree-provision <worktree> schemes/pumas/pumas schemes/rrtmgp/ext`
-  populates the submodules it needs.
-- `fbody`: proves a subroutine body survived a move or split (normalized diff per unit).
-- `fcheck`: compiles the Fortran you touched against a cached module set, no model build.
+- `suite-trace/bin/suite-trace --cam-sima <dir> --atmospheric-physics <dir> --suite <stem>`
+  followed by `status | who <name> | trace <name> | consumers <name> | scheme <name> |
+  schemes | search <regex> | read-before-write | audit`: does a suite resolve, who provides a
+  standard name, who consumes it, dead inputs. A few seconds, no build. Under zsh, export
+  `SUITE_TRACE_CAM_SIMA`, `SUITE_TRACE_ATMOSPHERIC_PHYSICS` and `SUITE_TRACE_SUITE` once
+  instead of holding the whole command in a `$ST` variable (zsh does not word-split it).
+  The pumas submodule must be populated for every suite, because the CAM-SIMA registry reads
+  `micro_pumas_diags.meta`; in a bare atmospheric_physics worktree:
+  `git -C <worktree> submodule update --init schemes/pumas/pumas` (about a second).
+- `fortran-verify/bin/fbody`: proves a subroutine body survived a move or split (one
+  IDENTICAL / DIFF n / NOT FOUND line per unit).
+- `fortran-verify/bin/fsig`: interface drift between two revisions; positional call check.
+
+Compile check without a model build (syntax and interfaces only): from a case that has
+built once with the same compiler, source the case environment first, otherwise the login
+shell's `gfortran` (12.x) is used instead of the case's (14.x):
+
+```
+cd <case> && source .env_mach_specific.sh
+gfortran -fsyntax-only -ffree-line-length-none \
+    -I$(./xmlquery --value EXEROOT)/atm/obj -J$TMPDIR <files>
+```
+
+`-J$TMPDIR` keeps the `.mod` output out of the case. An undeclared symbol or a changed
+interface fails here in seconds. Host code that uses the shared libraries (PIO, csm_share)
+usually also needs `-I$(./xmlquery --value EXEROOT)/lib/include`; when a module is still not
+found, the case build is the check.
 
 Everywhere: `cprnc` (`/glade/campaign/cesm/cesmdata/cprnc/cprnc` on Derecho; it is not a
 case variable on current CIME), `ncdump`, `ncks`.

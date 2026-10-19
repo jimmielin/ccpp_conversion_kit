@@ -9,10 +9,13 @@ What a tape holds, automatically: every `state` field (`state_*`), every constit
 (`cnst_<name>`), `tend`, every pbuf field (`pbuf_<name>`; a units table in
 `cam_snapshot_common.F90` only supplies units, unknown names just warn), `cam_in`/`cam_out`,
 a few routine locals (`tphysac_fh2o`, `tphysac_surfric`, `tphysac_obklen`,
-`tphysac_flx_heat`, or the tphysbc equivalents), the physics grid coordinates in radians
-(`lat_rad`, `lon_rad`, since October 2026; the null dycore prefers them over the degrees
-coordinates so latitude-dependent schemes see CAM's values bitwise), and, when before and
-after name the same scheme, the scheme's `ptend` fields. Step 0 is skipped by design, so `STOP_N=N` gives N frames
+`tphysac_flx_heat`, or the tphysbc equivalents), and, when before and after name the same
+scheme, the scheme's `ptend` fields. Pending, on the `hplin/iondrag_demo` branches (CAM
+6fc7772fa, CAM-SIMA 89beb07f) and not yet on `cam_development`: the physics grid
+coordinates in radians (`lat_rad`, `lon_rad`), which the null dycore prefers over the degrees
+coordinates so latitude-dependent schemes see CAM's values bitwise. A snapshot from the base
+branch does not carry them; see the latitude row of the pathology catalogue in
+`guides/50-dropsonde.md`. Step 0 is skipped by design, so `STOP_N=N` gives N frames
 (nstep 1 to N; verified with N=6); use 6, which is also the coupling minimum dropsonde needs.
 
 ## Choose the method
@@ -107,6 +110,7 @@ grow fast. Keep `STOP_N` small.
 
 ## Exit check
 
-Both tapes exist, cover at least 2 frames, carry every input and output of the scheme, and the
+Both tapes exist, cover `STOP_N` frames (6 by default), carry every input and output of the
+scheme, and the
 inventory table now names each one's snapshot field. If the bracket contains calls other than
 your scheme, the list of what your suite must reproduce is written down.

@@ -3,7 +3,7 @@
 Answers from the setup interview. Edit by hand when something changes.
 
 - machine: derecho
-- project: P93300606
+- project: <project>          # ./xmlquery PROJECT in any existing case shows one
 - cam: /glade/derecho/scratch/<user>/<sandbox>/CAM
 - cam_sima: /glade/derecho/scratch/<user>/<sandbox>/CAM-SIMA
 - scratch_root: /glade/derecho/scratch/<user>

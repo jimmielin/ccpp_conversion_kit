@@ -5,8 +5,9 @@ CCPP-compliant schemes for CAM-SIMA, end to end: splice inside CAM, prove bit-fo
 snapshot, move to atmospheric_physics, run the CAM-SIMA snapshot test, localize answer
 differences with dropsonde, open the PRs.
 
-It complements, and does not replace, the repository guidance in `AGENTS.md` (CAM, CAM-SIMA,
-atmospheric_physics) and `PORTING.md` (CAM-SIMA). Those own conventions; this kit owns process.
+It complements, and does not replace, the repository guidance in `AGENTS.md` (CAM and
+atmospheric_physics; CAM-SIMA's `AGENTS.md` and `PORTING.md` are pending on its
+`hplin/agents_md` branch). Those own conventions; this kit owns process.
 
 ## Install
 
@@ -15,9 +16,12 @@ directory under the name `ccpp-kit`:
 
 ```
 git clone <url> ~/conversion_kit
-mkdir -p ~/.claude/skills
+mkdir -p ~/.claude/skills ~/.claude/agents
 ln -s ~/conversion_kit ~/.claude/skills/ccpp-kit
+ln -s ~/conversion_kit/agents/cam-sima-reviewer.md ~/.claude/agents/cam-sima-reviewer.md
 ```
+
+The second link installs the review agent that phase 1 uses before the first build.
 
 Start Claude Code anywhere inside your sandbox (the directory that holds `CAM/` and
 `CAM-SIMA/`) and say what you want to convert. The skill triggers on CCPP vocabulary. On first
@@ -46,6 +50,11 @@ templates/
   kit.local.example.md
   user_nl_cam.snapshot
   testmod_fphystest/     shell_commands + user_nl_cam for a CAM-SIMA snapshot test
+agents/
+  cam-sima-reviewer.md   Claude Code agent: boundary, metadata and b4b review of a scheme
+tools/
+  ccpp_lint.py           mechanical style check for atmospheric_physics Fortran and XML
+  check_quick_ref.py     validates references/standard_names_quick_ref.md against the code
 ```
 
 ## Conventions for this repository

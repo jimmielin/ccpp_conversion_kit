@@ -24,7 +24,8 @@ On a compute node, not a login node. First copy the batch logs aside, because ru
 
 ```
 mkdir -p <sandbox>/notes/logs_before_dropsonde
-cp -p $SCRATCH_ROOT/<cam case>/run/*.log.* $SCRATCH_ROOT/<sima case>/run/*.log.* \
+cp -p /glade/derecho/scratch/$USER/<cam case>/run/*.log.* \
+      /glade/derecho/scratch/$USER/<sima case>/run/*.log.* \
       <sandbox>/notes/logs_before_dropsonde/
 ```
 
@@ -33,8 +34,8 @@ The batch form avoids an interactive session:
 ```
 qcmd -A <project> -l walltime=01:00:00 -- bash -lc '
   cd <sandbox>/dropsonde &&
-  ./dropsonde --cam  $SCRATCH_ROOT/<cam case>  \
-              --sima $SCRATCH_ROOT/<sima case> \
+  ./dropsonde --cam  /glade/derecho/scratch/$USER/<cam case>  \
+              --sima /glade/derecho/scratch/$USER/<sima case> \
               --sdf  <atmospheric_physics>/test/test_suites/suite_<scheme>.xml \
               --out  <sandbox>/notes/dropsonde_<scheme>_<n>'
 ```
@@ -80,7 +81,7 @@ Match the fingerprint before theorizing.
 | Differences look like one-timestep deltas of the fields themselves | off-by-one frame or a stale tape | confirm the capture regenerated and the case mounts the new files |
 | Everything differs from the first compared scheme | wrong snapshot or wrong step pairing; the report's `alignment check` verdict says which | |
 | A small answer difference and the scheme's log shows it disabled itself | GNU on Derecho zeroes the hidden length of deferred-length module character arrays across use association | store fixed-length copies |
-| `[INPUTS DIFFER]` on `latitude` (or `longitude`) only, about 1e-16 at a few dozen columns; outputs differ at 1e-18 in the fields that use it | the snapshot predates the `lat_rad`/`lon_rad` fields (October 2026), so the null dycore rebuilt radians from degrees; CAM hands schemes its native radians | harness; regenerate the snapshot with current CAM, or exclude the `_due_to_model_physics` accumulator with a comment |
+| `[INPUTS DIFFER]` on `latitude` (or `longitude`) only, about 1e-16 at a few dozen columns; outputs differ at 1e-18 in the fields that use it | the null dycore rebuilds radians from the snapshot's degrees coordinates, while CAM hands schemes its native radians. The host fix (CAM writes `lat_rad`/`lon_rad` on the tapes, the null dycore prefers them) is pending on the `hplin/iondrag_demo` branches, CAM 6fc7772fa and CAM-SIMA 89beb07f, not yet on the base branches | harness; exclude the affected `_due_to_model_physics` accumulator with a comment, or build both models from the fix branches and regenerate the snapshot |
 | Integer vs real exponent, partial fill of an `intent(out)` array, a missing clamp that CAM applied in `physics_update` | genuine port differences | `references/framework_gotchas.md`, b4b discipline |
 
 ## The loop

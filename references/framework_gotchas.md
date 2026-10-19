@@ -23,7 +23,8 @@ verify against the code paths cited.
    the same reason). RESOLVED (2026-07-05, generated-code
    inspection): the registry ic mapping DOES apply to a meta-registered
    constituent, but only after CAM-SIMA's case-sensitivity fix (CAM-SIMA
-   commit "To cherry-pick: case-insensitive standard-name matching") -
+   tag `sima0_16_001`, PR #518, commit 1ca6e5ba: case-insensitive
+   constituent names in the IC file read path) -
    capgen lowercases scheme-side standard names ('CO2' -> 'co2') while
    registry declarations keep authored case, and both write_init_files.py's
    registry-constituent membership test and physics_data's runtime name
@@ -33,7 +34,7 @@ verify against the code paths cited.
    case, which is why rrtmgp_constituents never hit this.
 
 2. **Aerosol instances (props AND states) are now created BEFORE phys_init**
-   (CAM-SIMA `cam_comp.F90:283-285`: `rad_aer_init_all` - `rad_aer_init` ->
+   (CAM-SIMA `cam_comp.F90`, `cam_init`, around line 282: `rad_aer_init_all` - `rad_aer_init` ->
    `aerosol_instances_init` -> `aerosol_instances_init_states` - runs before
    `phys_init`; reordered by hplin 2026-04-20 for the microp_aero BAM unit).
    Consequences (UPDATED 2026-07-15; the old "deferred first-run init"
@@ -66,8 +67,8 @@ verify against the code paths cited.
 
 5. **Namelist auto-wiring**: an `<entry>` in `<scheme>_namelist.xml` with a
    `standard_name` becomes an `_init`-phase argument with that standard name.
-   File-path options: `char*256`, `input_pathname="abs"`,
-   `${DIN_LOC_ROOT}/...` default value.
+   File-path options are plain `char*256` entries (no `input_pathname`
+   element; no scheme namelist uses one); see conventions.md for the shape.
 
 6. **Scheme-level file reads** use `ccpp_io_reader`
    (`abstract_netcdf_reader_t`, `create_netcdf_reader_t`) at `_init`:
