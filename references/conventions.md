@@ -11,7 +11,7 @@ Follow these conventions exactly when generating Fortran code:
     integer,            intent(in)  :: pver
     real(kind_phys),    intent(in)  :: zm(:, :)       ! geopotential height wrt surface [m] (layer centers)
     real(kind_phys),    intent(out) :: concld(:, :)   ! convective cloud cover [fraction]
-    character(len=512), intent(out) :: errmsg
+    character(len=*),   intent(out) :: errmsg
     integer,            intent(out) :: errflg
 ```
 
@@ -92,7 +92,8 @@ Always add `errmsg, errflg` as the last two arguments. Initialize at routine top
 ### Key rules
 - Do NOT include `long_name`
 - `type = real | kind = kind_phys` on one line (pipe-separated)
-- Character kinds: `type = character | kind = len=512`
+- Character arguments, `errmsg` included: `type = character | kind = len=*`, matching the
+  `len=*` Fortran dummy. The CCPP cap owns the actual string and its length.
 - Scalar dimensions: `dimensions = ()`
 - Error variables always at the end of each arg table
 
@@ -287,7 +288,7 @@ CONTAINS
       use cam_history,         only: history_add_field
       use cam_history_support, only: horiz_only
 
-      character(len=512), intent(out) :: errmsg
+      character(len=*),   intent(out) :: errmsg
       integer,            intent(out) :: errflg
 
       errmsg = ''
@@ -313,7 +314,7 @@ CONTAINS
       real(kind_phys),    intent(in)  :: field_3d(:, :)   ! description [units] (layer centers)
       real(kind_phys),    intent(in)  :: field_3d_i(:, :) ! description [units] (layer interfaces)
       real(kind_phys),    intent(in)  :: field_2d(:)      ! description [units]
-      character(len=512), intent(out) :: errmsg
+      character(len=*),   intent(out) :: errmsg
       integer,            intent(out) :: errflg
 
       errmsg = ''
@@ -331,7 +332,8 @@ end module <parameterization>_diagnostics
 The metadata `[ccpp-table-properties]` block has no `dependencies` line: `cam_history` and
 `cam_history_support` are host-provided, and `sima_diagnostics` is the one place a scheme may
 `use` them. No module-level `save` (the linter flags it); the repository template is
-`schemes/sima_diagnostics/scheme_diagnostics_template.F90`.
+`schemes/sima_diagnostics/scheme_diagnostics_template.F90` (it still declares `errmsg` as
+`len=512`; use `len=*` as above).
 
 ## Recurring Scheme Patterns
 

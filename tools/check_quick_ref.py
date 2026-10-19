@@ -26,11 +26,13 @@ def collect(cam_sima, atmos_phys):
         attrs = dict(re.findall(r'(\w+)="([^"]*)"', tag.group(0)))
         if 'standard_name' in attrs and 'units' in attrs:
             add(attrs['standard_name'], attrs['units'], 'registry.xml')
-    metas = glob.glob(os.path.join(cam_sima, 'src', '**', '*.meta'), recursive=True)
+    # Skip CAM-SIMA's submodule copy of atmospheric_physics (atmos_phys is read
+    # directly). Filter only the CAM-SIMA list: atmos_phys may itself be that
+    # submodule (<CAM-SIMA>/src/physics/ncar_ccpp).
+    metas = [p for p in glob.glob(os.path.join(cam_sima, 'src', '**', '*.meta'), recursive=True)
+             if os.sep + 'ncar_ccpp' + os.sep not in p]
     metas += glob.glob(os.path.join(atmos_phys, '**', '*.meta'), recursive=True)
     for path in metas:
-        if os.sep + 'ncar_ccpp' + os.sep in path:
-            continue  # the CAM-SIMA submodule copy; atmos_phys is read directly
         current = None
         for line in open(path, errors='replace'):
             m = re.match(r'\s*standard_name\s*=\s*(\S+)', line)

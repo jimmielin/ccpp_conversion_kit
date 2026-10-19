@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """ccpp_lint.py -- static checks for atmospheric_physics code-review rules.
 
-Implements the code-review rules Jesse commonly checks on CAM-SIMA / CCPP
-physics (atmospheric_physics), limited to what a static linter can do
-faithfully. This is deliberately separate from f90_house_style.py, which
-enforces a personal formatting preference; nothing here reformats code.
+Implements the mechanical code-review rules commonly applied to CAM-SIMA /
+CCPP physics (atmospheric_physics), limited to what a static linter can do
+faithfully. It reports findings; only --fix rewrites code, and only for the
+two mechanical rules described below.
 
 Reliable rules (always on):
   module-save      no `save` at module scope (statement or attribute)
