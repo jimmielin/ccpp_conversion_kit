@@ -9,7 +9,9 @@ Answers from the setup interview. Edit by hand when something changes.
 - scratch_root: /glade/derecho/scratch/<user>
 - compiler: gnu
 - autonomy: 1          # 0 = user runs cluster commands, 1 = confirm first, 2 = run and report
-- atmospheric_physics_fork: git@github.com:<user>/atmospheric_physics.git
+- github_write: no     # no = all work stays in local branches, the user pushes and opens PRs
+                       # yes = Claude may push to the fork below and open PRs (never to ESCOMP)
+- atmospheric_physics_fork: git@github.com:<user>/atmospheric_physics.git   # used at phase 6
 - atmospheric_physics_branch: <user>/<scheme>_ccpp
 - scheme: iondrag_calc_ghg
 - compset: FWsc2000climo

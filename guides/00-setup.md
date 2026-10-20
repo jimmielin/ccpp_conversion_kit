@@ -25,22 +25,35 @@ CAM carries atmospheric_physics at `CAM/src/atmos_phys`; CAM-SIMA carries it at
 models usually pin different tags. During a conversion both copies must hold the same code,
 because dropsonde compares the two models running the same scheme source.
 
-Default, git-honest flow:
+Default, git-honest flow. It stays on the local filesystem: the CAM-SIMA copy fetches from
+the CAM copy's directory, and GitHub is not involved until the user decides to push.
 
 1. In `CAM/src/atmos_phys`, create a branch from the pinned tag and commit the portable
    scheme there (phase 1 writes it directly under `schemes/<scheme>/`).
-2. Push the branch to your fork of ESCOMP/atmospheric_physics.
-3. In `CAM-SIMA/src/physics/ncar_ccpp`, `git fetch <fork>` and check out the same branch.
-4. Every later change: commit in one copy, push, pull in the other. Before any dropsonde run,
-   confirm `git -C CAM/src/atmos_phys rev-parse HEAD` equals the same in CAM-SIMA.
+2. In `CAM-SIMA/src/physics/ncar_ccpp`, add the CAM copy as a remote and check out the same
+   branch from it:
+
+   ```
+   git -C <sandbox>/CAM-SIMA/src/physics/ncar_ccpp remote add cam_copy <sandbox>/CAM/src/atmos_phys
+   git -C <sandbox>/CAM-SIMA/src/physics/ncar_ccpp fetch cam_copy
+   git -C <sandbox>/CAM-SIMA/src/physics/ncar_ccpp checkout -b <branch> cam_copy/<branch>
+   ```
+
+3. Every later change: commit in the CAM copy, then `git pull cam_copy <branch>` in the
+   CAM-SIMA copy; it is a fast-forward because only one copy is edited. If a phase 3 edit is
+   more natural in the CAM-SIMA copy, add the reverse remote the same way and pull in the CAM
+   copy. Before any dropsonde run, confirm `git -C CAM/src/atmos_phys rev-parse HEAD` equals
+   the same in CAM-SIMA.
+4. The branch reaches the user's fork only when the user pushes it, or when `kit.local.md`
+   says `github_write: yes`; usually at phase 6.
 
 The superprojects will report the submodule as modified; that is expected until the PRs bump
 the pins. Do not run `git-fleximod update` again in a sandbox with a checked-out branch; it
 moves the submodule back to the pinned tag.
 
 Opt-in shortcut for experienced users: replace one submodule directory with a symlink to the
-other. One working tree, no push and pull, but `git status` and fleximod get confused and a
-`git-fleximod update` will destroy the link. Not for a first conversion.
+other. One working tree, no pull between copies, but `git status` and fleximod get confused
+and a `git-fleximod update` will destroy the link. Not for a first conversion.
 
 ## Setup interview
 
@@ -56,14 +69,27 @@ file from `templates/kit.local.example.md`. Do not guess any of them.
 4. Autonomy level (below).
 5. Which parameterization, and the compset and grid that exercise it. If unknown, phase 1
    starts by finding out; `references/waccm-triage.md` has the answer for the WACCM sheet.
+6. Whether you may write to GitHub: `git push` to the user's fork and opening pull requests.
+   Default no. Tell the user plainly what no means: every commit stays on a branch in the
+   local clones, the two atmospheric_physics copies sync through a local remote, and the
+   user pushes and opens the PRs when ready. This is independent of the autonomy level and
+   never extends to the ESCOMP remotes.
 
 ## Autonomy levels
 
-| Level | Cluster commands that change state (create case, build, submit, dropsonde, tests) | Reading files, logs, ncdump, git |
-|---|---|---|
-| 0 | You write the exact command; the user runs it and pastes the output back | always allowed |
-| 1 | You state the command and its purpose, wait for a yes, then run it | always allowed |
-| 2 | You run it and report what happened, including failures verbatim | always allowed |
+| Level | Cluster commands that change state (create case, build, submit, dropsonde, tests) | Reading files, logs, ncdump, git | GitHub: push, pull request, any write to a fork |
+|---|---|---|---|
+| 0 | You write the exact command; the user runs it and pastes the output back | always allowed | never |
+| 1 | You state the command and its purpose, wait for a yes, then run it | always allowed | never |
+| 2 | You run it and report what happened, including failures verbatim | always allowed | never |
+
+The autonomy level is about the cluster, not GitHub. Whatever the level, every commit lives
+on a branch in the local clones and nothing is pushed anywhere, not even to the user's own
+fork, unless `kit.local.md` says `github_write: yes`. The ESCOMP remotes are never a push
+target, and pull requests are opened by the user. Local git is part of the work at every
+level: feature branches, commits on them, and the fetch and pull between the two
+atmospheric_physics copies. Never commit on a base branch, never rewrite history, and report
+every commit.
 
 At every level: never write outside the user's own home, scratch, or work directories; never
 touch the shared snapshot baseline before phase 6; never `rm -rf` a case directory without
@@ -125,5 +151,6 @@ in the sandbox or ask the author if it is already installed somewhere.
 
 ## Exit check
 
-`kit.local.md` exists and is complete; both model clones have submodules populated; the
-atmospheric_physics branch is checked out in both copies at the same commit.
+`kit.local.md` exists and is complete, `github_write` included; both model clones have
+submodules populated; the atmospheric_physics branch is checked out in both copies at the
+same commit, the CAM-SIMA copy tracking the CAM copy through the `cam_copy` remote.

@@ -58,10 +58,15 @@ drift.
   `test/unit/python/sample_files/` that `test/unit/python/test_write_init_files.py` compares
   against (CAM-SIMA's `AGENTS.md`, pending on `hplin/agents_md`, describes the workflow).
 
-Push to your fork only, never to the ESCOMP remotes. Remove `user_set` brackets and any
-hardcoded capture switches before the CAM PR unless they were promoted to a named point.
+The user pushes the branches and opens the PRs. You draft each PR description and the
+commit messages, list the files each PR carries, and hand over the exact `git push` commands
+for the user's forks. Push yourself only if `kit.local.md` says `github_write: yes`, and then
+to the user's fork only; the ESCOMP remotes are never a push target. Remove `user_set`
+brackets and any hardcoded capture switches before the CAM PR unless they were promoted to a
+named point.
 
 ## Exit check
 
-Three PRs open in order with the pin bumps; the CAM-SIMA test passes against the shared
-snapshots; the proposed standard names were reviewed by the user and any `_TBD` resolved.
+Three PRs drafted, then pushed and opened by the user in order with the pin bumps; the
+CAM-SIMA test passes against the shared snapshots; the proposed standard names were reviewed
+by the user and any `_TBD` resolved.

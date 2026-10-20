@@ -23,8 +23,9 @@ pending on its `hplin/agents_md` branch; until they merge, the CAM-SIMA document
 
 1. Look for `kit.local.md` in the sandbox root (the directory holding `CAM/` and `CAM-SIMA/`).
    If it is missing, run the setup interview in `guides/00-setup.md` and write it. It records
-   the Derecho project code, checkout paths, scratch root, compiler, and the user's autonomy
-   level. Never guess these.
+   the Derecho project code, checkout paths, scratch root, compiler, the user's autonomy
+   level, and whether GitHub writes are allowed (`github_write`, default no). Never guess
+   these.
 2. Read `references/conventions.md` (style, metadata, namelist XML, registry, SDF patterns),
    `references/standard_names_quick_ref.md`, and `references/framework_gotchas.md`.
 3. Read the guide for the phase you are in (below). Guides are self-contained; each ends with
@@ -39,7 +40,7 @@ pending on its `hplin/agents_md` branch; until they merge, the CAM-SIMA document
 | 3. Move to atmospheric_physics and CAM-SIMA: metadata, namelist XML, host variables, SDF, FPHYStest case | `guides/30-cam-sima-phase.md` | capgen resolves the suite; the case builds |
 | 4. Run on Derecho and read the check | `guides/40-derecho-loop.md` | `ncdata_check` reports no differences above threshold every step |
 | 5. When answers differ: dropsonde | `guides/50-dropsonde.md` | first divergence found, classified (wiring, harness, port), fixed; back to phase 4 |
-| 6. Wrap up: diagnostics scheme, regression test, snapshots to the shared baseline, PRs | `guides/60-wrapup.md` | three PRs open in order; CAM-SIMA test added |
+| 6. Wrap up: diagnostics scheme, regression test, snapshots to the shared baseline, PRs | `guides/60-wrapup.md` | three PRs drafted and, once the user pushes, open in order; CAM-SIMA test added |
 
 Phase 1 comes first on purpose. Code moves to atmospheric_physics only after it is provably
 CCPP-shaped and b4b inside CAM, under CAM's own tests. Any later CAM-SIMA divergence is then
@@ -68,13 +69,23 @@ and the verification of the tapes.
   and the user runs it and pastes the output. Level 1: you run builds and submissions after
   stating what you are about to do and getting a yes. Level 2: you run everything, including
   dropsonde under `qcmd`, and report. Reading logs and files is always allowed.
+- **Nothing leaves the machine without the user's explicit consent.** The autonomy level
+  covers the cluster, not GitHub. At every level all work lives in the local clones as
+  branches: never `git push`, open a pull request, or write to any GitHub repository,
+  including the user's own forks, unless `kit.local.md` says `github_write: yes`. Even then
+  the ESCOMP remotes are never a push target. The user opens the PRs; you draft the text.
 - **Disclose AI assistance** in commit messages and PR descriptions, per the CAM `AGENTS.md`.
   The human submitter must be able to defend every line.
 
 ## Working style
 
-- Ask before deciding design questions (new host variable or scheme-side computation, where a
-  dependency lives, interstitial boundaries). Collect questions and present them together.
+- Hold one design round after the phase 1 inventory and before the splice. It has two parts.
+  Questions are the decisions only the user can make: new host variable or scheme-side
+  computation, where a dependency lives, interstitial boundaries, whether a CAM facade is
+  needed. Defaults are everything a convention already answers (file, module, directory and
+  routine names, the `_cam` suffix; `references/conventions.md`, Naming): list them for the
+  user to override, do not ask. Design questions that surface later are collected and
+  presented together the same way.
 - Present two to four options with trade-offs for anything structural. Let the user narrow.
 - Prefer small, inspectable steps with a check after each (a syntax-only compile, fbody,
   suite-trace, a build).
@@ -83,9 +94,9 @@ and the verification of the tapes.
 - Thread diagnostics early. Intermediate quantities that feed `outfld` become arguments during
   the splice so the portable interface never churns later, and the same arguments feed the
   `_diagnostics` scheme and dropsonde triage.
-- Commit on top, never amend and force-push once a branch is on the fork or checked out on
-  the cluster. atmospheric_physics and CAM-SIMA squash-merge, so branch history does not
-  matter and a rewritten branch breaks the other checkout's `git pull`.
+- Commit on top, never amend or rewrite a branch once the other atmospheric_physics copy
+  has fetched it. atmospheric_physics and CAM-SIMA squash-merge, so branch history does not
+  matter and a rewritten branch breaks the other copy's `git pull`.
 
 ## Two regimes
 

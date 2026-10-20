@@ -32,6 +32,15 @@ I also recommend installing `dropsonde` (https://github.com/hplin-ucar/dropsonde
 3. Start Claude Code. Invoke the `/ccpp-kit` skill, and you will be interviewed to start the process.
 4. Claude will work with you to get everything converted!
 
+## Where the work lives
+
+Everything Claude writes stays in your sandbox: branches in your local CAM, CAM-SIMA and
+atmospheric_physics clones, and case directories under your scratch. The two
+atmospheric_physics copies sync through a local remote, not through GitHub. At any autonomy
+level Claude never pushes, opens a pull request, or writes to a fork unless you set
+`github_write: yes` in `kit.local.md`, and ESCOMP repositories are never a push target even
+then. You push and open the PRs when you are ready; Claude drafts the text.
+
 ## Layout
 
 ```

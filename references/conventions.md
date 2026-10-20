@@ -53,6 +53,26 @@ contains
 end module scheme_name
 ```
 
+### Naming
+
+Defaults. State them in the design round; change them only when the user says so. Precedents
+are `beljaars_drag_cam.F90`, `rk_stratiform_cam.F90`, `dadadj_cam.F90` and
+`rayleigh_friction_cam.F90` in CAM, and `schemes/dry_adiabatic_adjust/dadadj.F90` and
+`schemes/rasch_kristjansson/rk_stratiform.F90` in atmospheric_physics.
+
+| Item | Default | CAM module `qbo` |
+|---|---|---|
+| Scheme name | the CAM module name | `qbo` |
+| Portable file and module | `schemes/<dir>/<module>.F90`, `module <module>` | `schemes/qbo/qbo.F90`, `module qbo` |
+| Scheme directory | the module name; offer a descriptive name (`dry_adiabatic_adjust`, `rasch_kristjansson`) as the alternative when the module name is an abbreviation | `qbo` |
+| Phase routines | `<module>_init`, `<module>_timestep_init`, `<module>_run`, `<module>_final` | `qbo_init`, `qbo_timestep_init`, `qbo_run` |
+| CAM facade | `<module>_cam.F90`, `module <module>_cam`, in the original module's directory; omitted when it would only forward the call | `src/physics/waccm/qbo_cam.F90` |
+| Facade routines | the original names, so call sites change only the `use` line; `<module>_cam_<phase>` when the original name collides with a scheme phase routine | `qbo_readnl`, `qbo_cam_init`, `qbo_cam_timestep_init`, `qbo_relax` |
+| Partial split | the moved entry routine's name is the scheme name; the CAM module is edited in place, no facade | `iondrag_calc_ghg` |
+| Interstitials | one `_run` per scheme; own file when standalone, `<scheme>_interstitials.F90` for several; a multi-scheme file cannot carry a `_namelist.xml` | `beljaars_drag_interstitials.F90` |
+| Namelist XML | `<scheme>_namelist.xml` beside the scheme | `qbo_namelist.xml` |
+| Diagnostics | `sima_diagnostics/<scheme>_diagnostics.F90` | `qbo_diagnostics.F90` |
+
 ### Error handling
 Always add `errmsg, errflg` as the last two arguments. Initialize at routine top:
 ```fortran

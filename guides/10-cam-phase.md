@@ -7,6 +7,11 @@ moves to CAM-SIMA until this phase's exit check passes.
 
 Find the driver subroutine and record, as a table, everything it touches:
 
+- The real module, not a stub: `src/physics/cam` carries stub versions of several WACCM and
+  WACCM-X modules (`qbo.F90` is one) that compile when the model is built without
+  `-waccm_phys`; the real module sits in `src/physics/waccm` or `src/physics/waccmx`, which
+  `bld/configure` lists ahead of `src/physics/cam` in Filepath. Run
+  `find src -name <module>.F90` first, and skip any file whose header says "Stub version".
 - Call site: `src/physics/cam/physpkg.F90` and `src/physics/cam7/physpkg.F90` are separate
   files; most schemes are called from both. Note `tphysbc` (before the coupler) or `tphysac`
   (after). Note whether an existing snapshot bracket surrounds the call (phase 2 uses this).
@@ -27,19 +32,42 @@ Find the driver subroutine and record, as a table, everything it touches:
 ## 1.2 Splice: portable module plus CAM interface
 
 Create two files from the original module. Every original line goes to exactly one of them.
+Names follow the defaults in `references/conventions.md` (Naming): the scheme takes the CAM
+module name, the CAM side gets `_cam`. List them in the design round, do not ask. For a
+module `qbo` in `src/physics/waccm/qbo.F90`:
 
-- `CAM/src/atmos_phys/schemes/<scheme>/<scheme>.F90`: the portable science, on the
-  atmospheric_physics branch. Written here so the later "move" is nothing but metadata.
+- `CAM/src/atmos_phys/schemes/qbo/qbo.F90`, `module qbo`, routines `qbo_init`,
+  `qbo_timestep_init`, `qbo_run`: the portable science, on the atmospheric_physics branch.
+  Written here so the later "move" is nothing but metadata.
   Rules: `use ccpp_kinds, only: kind_phys`; explicit arguments for everything that was
   `state%`, `ptend%`, `pbuf`, or a host module; assumed-shape `(:,:)` dummies; `errmsg,
   errflg` last; `_init`/`_run`/`_timestep_init` names; no `addfld`/`outfld` (intermediates
   that fed `outfld` become `intent(out)` arguments now, so the interface never churns later).
-- `CAM/src/physics/<cam|waccm|...>/<scheme>_cam.F90`: the CAM interface. Keeps `readnl`,
-  resolves pbuf and constituent indices, subsets `pcols` arrays to `1:ncol` at the call,
-  zero-fills any `intent(out)` array that is sized `pcols` (mark with `!REMOVECAM` comments),
-  initializes `ptend`, calls `outfld`, passes constants from `physconst`.
+- `CAM/src/physics/waccm/qbo_cam.F90`, `module qbo_cam`, in the original module's directory:
+  the CAM facade. Keeps `readnl`, resolves pbuf and constituent indices, subsets `pcols`
+  arrays to `1:ncol` at the call, zero-fills any `intent(out)` array that is sized `pcols`
+  (mark with `!REMOVECAM` comments), initializes `ptend`, calls `outfld`, passes constants
+  from `physconst`, then calls the portable routine. Its routines keep their original names
+  (`qbo_readnl`, `qbo_relax`) so `physpkg.F90` changes only the `use` line; a name that would
+  collide with a scheme phase routine takes `_cam` after the module name (`qbo_cam_init`,
+  `qbo_cam_timestep_init`; `dadadj_cam_init` is the precedent).
 - Add the new scheme directory to the Filepath list in `CAM/bld/configure` (directories are not
-  discovered automatically). `physpkg.F90` calls the `_cam` interface.
+  discovered automatically).
+
+The facade is not decoration; it exists for the CAM plumbing listed above. When it would only
+forward the call, skip it and let `physpkg.F90`, or the CAM module that already owns the
+surrounding logic, call the `_run` routine directly: `microp_aero.F90` calls
+`compute_subgrid_vertical_velocity_tke_run` that way, and `vertical_diffusion.F90` calls the
+`holtslag_boville_diff` schemes. One facade may also front several schemes that share their
+CAM plumbing (`microp_aero.F90` again). Whether a facade is needed is a design-round question.
+
+Processing that CAM did around the call (unit changes, derived inputs such as the subgrid
+vertical velocity in `microp_aero.F90` or the diffusion top in `vertical_diffusion.F90`)
+becomes interstitial schemes, one `_run` each, placed around the scheme in the suite. A
+standalone one gets its own file; several small ones share a `<scheme>_interstitials.F90`
+(`beljaars_drag_interstitials.F90`, `holtslag_boville_diff_interstitials.F90`). A file that
+holds more than one scheme cannot carry a `_namelist.xml`, a framework limitation, so a
+scheme that reads a namelist gets its own file.
 
 Partial split. When only one path of a dispatcher module moves (iondrag's ghg path moved,
 its ions path stayed), there is no `<scheme>_cam.F90`: the CAM module is edited in place, its
@@ -76,8 +104,8 @@ choice in the inventory, and flag it in the PR.
   `gfortran -fsyntax-only` recipe under Tools in `guides/00-setup.md`); seconds, no build.
 - A review pass before the first build (the `cam-sima-reviewer` agent, or a colleague):
   b4b risks, metadata against the Fortran, suite order. Apply non-numeric fixes as follow-up
-  commits; atmospheric_physics and CAM-SIMA squash-merge, so never amend and force-push a
-  branch that is already on the fork or checked out on the cluster.
+  commits; atmospheric_physics and CAM-SIMA squash-merge, so never amend or rewrite a
+  branch that the other atmospheric_physics copy has already fetched.
 - Mechanical style rules: the repo linter configured in atmospheric_physics CI; read
   `AGENTS.md` and `doc/Code-style.md` there.
 

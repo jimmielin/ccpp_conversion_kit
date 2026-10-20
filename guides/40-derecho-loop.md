@@ -3,7 +3,8 @@
 ## The loop
 
 ```
-edit scheme / meta / suite in atmospheric_physics  ->  commit, push, pull into the other copy
+edit scheme / meta / suite in one atmospheric_physics copy  ->  commit, pull into the other
+                                                              copy over the local remote (guide 00)
   -> qcmd -A <project> -- ./case.build        (incremental; only atm rebuilds)
   -> ./case.submit
   -> read atm.log: IC reads, then the per-step check blocks
